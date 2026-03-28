@@ -205,7 +205,7 @@ function renderToppings() {
 const milkSection = document.getElementById('milk-section');
 
 function renderMilk() {
-  const isNoMilkOption = ['jstr', 'jman', 'jpas', 'jas', 'coc', 'pan'].includes(modal.drink.id);
+  const isNoMilkOption = ['jstr', 'jman', 'jpas', 'jas', 'coc', 'pan', 'tt', 'tg'].includes(modal.drink.id);
   milkSection.style.display = isNoMilkOption ? 'none' : '';
 
   if (isNoMilkOption) return;
