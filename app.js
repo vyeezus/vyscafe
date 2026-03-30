@@ -52,6 +52,7 @@ const cartTotalEl = document.getElementById('cart-total-val');
 const modalOverlay = document.getElementById('modal-overlay');
 const sugarContainer = document.getElementById('sugar-container');
 const toppingsContainer = document.getElementById('toppings-container');
+const toppingsSection = document.getElementById('toppings-section');
 const milkContainer = document.getElementById('milk-container');
 const iceContainer = document.getElementById('ice-container');
 const modalName = document.getElementById('modal-name');
@@ -151,7 +152,7 @@ function openModal(id, cat) {
   qtyNum.textContent = '1';
 
   renderSugar();
-  renderToppings();
+  renderToppings(cat);
   renderMilk();
   renderIce();
   renderExtraMatcha(cat);
@@ -182,7 +183,12 @@ function renderSugar() {
 }
 
 // Toppings
-function renderToppings() {
+function renderToppings(cat) {
+  const isMatcha = cat === 'matcha';
+  toppingsSection.style.display = isMatcha ? 'none' : '';
+
+  if (isMatcha) return;
+
   toppingsContainer.innerHTML = TOPPINGS.map(t => `
     <button class="topping-chip" data-top="${t.id}" aria-pressed="false">
       <span>${t.icon}</span> ${t.label}
