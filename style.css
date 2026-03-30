@@ -301,6 +301,20 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
 .milk-opt:hover { border-color: var(--matcha-light); background: var(--matcha-wash); }
 .milk-opt.selected { background: var(--matcha-deep); border-color: var(--matcha-deep); color: white; }
 
+.boba-notice {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--gold);
+  background: rgba(196,146,74,0.08);
+  border: 1px dashed rgba(196,146,74,0.3);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-top: 14px;
+  line-height: 1.4;
+  text-align: center;
+}
+
 /* Add to order */
 .modal-footer { margin-top: 24px; display: flex; align-items: center; gap: 12px; }
 .qty-control { display: flex; align-items: center; gap: 10px; }
