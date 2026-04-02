@@ -359,11 +359,11 @@ document.getElementById('confirm-close').addEventListener('click', () => {
 
 // ─── TOAST ───────────────────────────────────────────────────
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, durationMs = 2200) {
   toast.textContent = msg;
   toast.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), durationMs);
 }
 
 // ─── INIT ────────────────────────────────────────────────────
@@ -387,14 +387,15 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
   });
 
   const total = orderItems.length;
-  const bar = '─'.repeat(44);
+  const bar = '-'.repeat(44);
+  const rule = '='.repeat(44);
 
   const orderSummary = orderItems
     .map((item, index) => {
       const n = index + 1;
       const title = item.drink.name.toUpperCase();
-      const underline = '  ' + '─'.repeat(title.length);
-      const lab = (label, value) => `      ${label.padEnd(11)} ·  ${value}`;
+      const underline = '  ' + '-'.repeat(title.length);
+      const lab = (label, value) => `      ${label.padEnd(11)} |  ${value}`;
       const rows = [
         bar,
         `  DRINK ${n} OF ${total}`,
@@ -419,15 +420,15 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
     .join('\n');
 
   const messageBody = [
-    "        🍵  NEW ORDER  ·  Vy's Matcha",
+    "        NEW ORDER  |  Vy's Matcha",
     '',
-    '═'.repeat(44),
+    rule,
     '',
     `  For        ${customerName}`,
     `  Ordered    ${whenStr}`,
     `  Drinks     ${total}`,
     '',
-    '═'.repeat(44),
+    rule,
     '',
     orderSummary.trimEnd(),
     '',
@@ -437,23 +438,43 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
 
   const formData = {
     access_key: accessKey,
-    subject: `🍵 Order · ${customerName} · ${total} drink${total === 1 ? '' : 's'}`,
+    subject: `New order: ${customerName} (${total} drink${total === 1 ? '' : 's'})`,
     from_name: "Vy's Cafe Order System",
     message: messageBody,
   };
 
+  const emailFailToast = (msg) => showToast(msg, 5500);
+
   try {
     const response = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify(formData),
     });
+    const raw = await response.text();
     let result;
     try {
-      result = await response.json();
+      result = JSON.parse(raw);
     } catch {
-      console.error('Order email: bad response from server', response.status);
-      showToast("Order saved, but email couldn't be sent (bad response).");
+      const looksLikeHtml = /^\s*</.test(raw);
+      console.error(
+        'Order email: non-JSON response',
+        'status=',
+        response.status,
+        looksLikeHtml ? '(HTML / security page — see Web3Forms or network)' : raw.slice(0, 300)
+      );
+      if (looksLikeHtml) {
+        emailFailToast(
+          'Email service returned a security page instead of OK. Open the site over HTTPS (not a local file), disable VPN/ad-block for this page, or try another network.'
+        );
+      } else {
+        emailFailToast("Order placed, but the email service sent an unexpected response. Check the console (F12).");
+      }
+      return;
+    }
+    if (!response.ok) {
+      console.error('Order email: HTTP', response.status, result);
+      emailFailToast(`Order placed, but email API returned ${response.status}. See console (F12).`);
       return;
     }
     if (result.success) {
@@ -461,12 +482,12 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
     } else {
       const detail = result.message || result.error || JSON.stringify(result);
       console.error('Email notification failed:', detail, result);
-      showToast(
-        "Order placed, but the email notice failed. Open the browser console (F12) for details, or check spam / Web3Forms settings."
+      emailFailToast(
+        `Email notice failed: ${typeof detail === 'string' ? detail : 'see console (F12)'}. Check spam, Web3Forms dashboard, or rate limits.`
       );
     }
   } catch (err) {
     console.error('Error sending email notification:', err);
-    showToast("Order placed, but the email request failed (network or blocked).");
+    emailFailToast('Order placed, but the email request failed (offline, blocked, or network error).');
   }
 }
