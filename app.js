@@ -61,12 +61,7 @@ const modalIcon = document.getElementById('modal-icon');
 const qtyNum = document.getElementById('qty-num');
 const heroTitle = document.getElementById('hero-title');
 const confirmOverlay = document.getElementById('confirm-overlay');
-const confirmEmailStatus = document.getElementById('confirm-email-status');
 const toast = document.getElementById('toast');
-
-function setOrderEmailStatus(text) {
-  if (confirmEmailStatus) confirmEmailStatus.textContent = text || '';
-}
 
 // ─── RENDER DRINKS ───────────────────────────────────────────
 const CUSTOM_IMAGES = {
@@ -360,7 +355,6 @@ document.getElementById('place-order-btn').addEventListener('click', () => {
 });
 document.getElementById('confirm-close').addEventListener('click', () => {
   confirmOverlay.classList.remove('open');
-  setOrderEmailStatus('');
 });
 
 // ─── TOAST ───────────────────────────────────────────────────
@@ -379,8 +373,6 @@ renderCart();
 // ─── EMAIL NOTIFICATIONS ─────────────────────────────────────
 async function sendEmailNotification(orderItems, customerName = 'Guest') {
   if (!orderItems || orderItems.length === 0) return;
-
-  setOrderEmailStatus('Sending order copy by email…');
 
   const accessKey = '7668e711-744f-42c8-8e9c-d561620bb4c7';
 
@@ -451,8 +443,6 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
     message: messageBody,
   };
 
-  const emailFailToast = (msg) => showToast(msg, 5500);
-
   try {
     const response = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
@@ -472,44 +462,25 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
         looksLikeHtml ? '(HTML / security page — see Web3Forms or network)' : raw.slice(0, 300)
       );
       if (looksLikeHtml) {
-        const msg =
-          'Email blocked (security page). Use the real website link (https), not a saved file. Try turning off ad-block or VPN.';
-        setOrderEmailStatus(msg);
-        emailFailToast(msg);
+        console.error(
+          'Order email: HTML/security response — use https live site; check ad-block or VPN.'
+        );
       } else {
-        const msg = 'Email service sent an odd response. Open DevTools (F12) → Console.';
-        setOrderEmailStatus(msg);
-        emailFailToast(msg);
+        console.error('Order email: unexpected non-JSON response', raw.slice(0, 500));
       }
       return;
     }
     if (!response.ok) {
       console.error('Order email: HTTP', response.status, result);
-      const msg = `Email API error (${response.status}). See Console (F12).`;
-      setOrderEmailStatus(msg);
-      emailFailToast(msg);
       return;
     }
     if (result.success) {
       console.log('Order notification sent successfully.', result);
-      const msg =
-        'Email service accepted this order. If you do not see it in your inbox, check Spam / Promotions and the inbox address in your Web3Forms dashboard.';
-      setOrderEmailStatus(msg);
-      showToast('Order email accepted — check inbox & spam.', 4000);
     } else {
       const detail = result.message || result.error || JSON.stringify(result);
       console.error('Email notification failed:', detail, result);
-      const msg =
-        typeof detail === 'string'
-          ? `Email not sent: ${detail}`
-          : 'Email not sent — see Console (F12). Check Web3Forms / rate limits.';
-      setOrderEmailStatus(msg);
-      emailFailToast(msg);
     }
   } catch (err) {
     console.error('Error sending email notification:', err);
-    const msg = 'Could not reach email service (network, ad-block, or offline).';
-    setOrderEmailStatus(msg);
-    emailFailToast(msg);
   }
 }
