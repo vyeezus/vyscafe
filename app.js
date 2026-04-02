@@ -386,44 +386,60 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
     minute: '2-digit',
   });
 
+  const total = orderItems.length;
+  const bar = '─'.repeat(44);
+
   const orderSummary = orderItems
     .map((item, index) => {
-      const lines = [
-        `ITEM ${index + 1} — ${item.drink.name}`,
-        `  Sugar    ${item.sugar}`,
-        `  Ice      ${item.ice}`,
-        `  Milk     ${item.milk}`,
+      const n = index + 1;
+      const title = item.drink.name.toUpperCase();
+      const underline = '  ' + '─'.repeat(title.length);
+      const lab = (label, value) => `      ${label.padEnd(11)} ·  ${value}`;
+      const rows = [
+        bar,
+        `  DRINK ${n} OF ${total}`,
+        bar,
+        '',
+        `  ${title}`,
+        underline,
+        '',
+        lab('Sugar', item.sugar),
+        lab('Ice', item.ice),
+        lab('Milk', item.milk),
       ];
       if (item.extraMatcha) {
-        lines.push(`  Add-on   +1g extra matcha`);
+        rows.push(lab('Extra', '+1g matcha'));
       }
       if (item.toppings && item.toppings.length > 0) {
-        lines.push(`  Toppings ${item.toppings.map((t) => t.label).join(', ')}`);
+        rows.push(lab('Toppings', item.toppings.map((t) => t.label).join(', ')));
       }
-      return lines.join('\n');
+      rows.push('');
+      return rows.join('\n');
     })
-    .join('\n\n' + '─'.repeat(36) + '\n\n');
+    .join('\n');
+
+  const messageBody = [
+    "        🍵  NEW ORDER  ·  Vy's Matcha",
+    '',
+    '═'.repeat(44),
+    '',
+    `  For        ${customerName}`,
+    `  Ordered    ${whenStr}`,
+    `  Drinks     ${total}`,
+    '',
+    '═'.repeat(44),
+    '',
+    orderSummary.trimEnd(),
+    '',
+    bar,
+    '',
+  ].join('\n');
 
   const formData = {
     access_key: accessKey,
-    subject: `New order — ${customerName} (${orderItems.length} item${orderItems.length === 1 ? '' : 's'})`,
+    subject: `🍵 Order · ${customerName} · ${total} drink${total === 1 ? '' : 's'}`,
     from_name: "Vy's Cafe Order System",
-    message: [
-      "NEW ORDER — Vy's Matcha",
-      '═'.repeat(40),
-      '',
-      `Customer    ${customerName}`,
-      `Placed      ${whenStr}`,
-      `Line items  ${orderItems.length}`,
-      '',
-      '─'.repeat(40),
-      '',
-      orderSummary,
-      '',
-      '─'.repeat(40),
-      '',
-      'Reply from this thread to follow up with the customer if needed.',
-    ].join('\n'),
+    message: messageBody,
   };
 
   try {
