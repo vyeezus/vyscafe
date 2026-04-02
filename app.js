@@ -376,22 +376,40 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
 
   const accessKey = '7668e711-744f-42c8-8e9c-d561620bb4c7';
 
-  // Format order summary
+  // Better formatted order summary
   let orderSummary = orderItems.map((item, index) => {
-    let details = `• ${item.drink.name}\n`;
-    details += `  Sugar: ${item.sugar} | Ice: ${item.ice} | Milk: ${item.milk}\n`;
-    if (item.extraMatcha) details += `  + Extra Matcha (+1g)\n`;
+    let details = `${index + 1}. ${item.drink.name.toUpperCase()}\n`;
+    details += `   • Sugar: ${item.sugar}\n`;
+    details += `   • Ice:   ${item.ice}\n`;
+    details += `   • Milk:  ${item.milk}\n`;
+    if (item.extraMatcha) {
+      details += `   • ADD-ON: +1g Extra Matcha 🍃\n`;
+    }
     if (item.toppings && item.toppings.length > 0) {
-      details += `  + Toppings: ${item.toppings.map(t => t.label).join(', ')}\n`;
+      details += `   • Toppings: ${item.toppings.map(t => t.label).join(', ')}\n`;
     }
     return details;
   }).join('\n');
 
   const formData = {
     access_key: accessKey,
-    subject: `New Order from ${customerName} 🍵 (${orderItems.length} items)`,
+    subject: `🍵 New Order: ${customerName} (${orderItems.length} items)`,
     from_name: "Vy's Cafe Order System",
-    message: `You have a new order from ${customerName}!\n\nORDER SUMMARY:\n${orderSummary}\n\nTime: ${new Date().toLocaleString()}`,
+    message: `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       🍵 NEW ORDER RECEIVED 🍵
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CUSTOMER:  ${customerName}
+DATE:      ${new Date().toLocaleDateString()}
+TIME:      ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+TOTAL:     ${orderItems.length} item(s)
+
+ORDER DETAILS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${orderSummary}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    `.trim(),
   };
 
   try {
