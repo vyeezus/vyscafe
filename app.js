@@ -430,15 +430,27 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
     const response = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(formData),
     });
-    const result = await response.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      console.error('Order email: bad response from server', response.status);
+      showToast("Order saved, but email couldn't be sent (bad response).");
+      return;
+    }
     if (result.success) {
       console.log('Order notification sent successfully.');
     } else {
-      console.error('Email notification failed:', result.message);
+      const detail = result.message || result.error || JSON.stringify(result);
+      console.error('Email notification failed:', detail, result);
+      showToast(
+        "Order placed, but the email notice failed. Open the browser console (F12) for details, or check spam / Web3Forms settings."
+      );
     }
   } catch (err) {
     console.error('Error sending email notification:', err);
+    showToast("Order placed, but the email request failed (network or blocked).");
   }
 }
