@@ -376,40 +376,54 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
 
   const accessKey = '7668e711-744f-42c8-8e9c-d561620bb4c7';
 
-  // Better formatted order summary
-  let orderSummary = orderItems.map((item, index) => {
-    let details = `${index + 1}. ${item.drink.name.toUpperCase()}\n`;
-    details += `   • Sugar: ${item.sugar}\n`;
-    details += `   • Ice:   ${item.ice}\n`;
-    details += `   • Milk:  ${item.milk}\n`;
-    if (item.extraMatcha) {
-      details += `   • ADD-ON: +1g Extra Matcha 🍃\n`;
-    }
-    if (item.toppings && item.toppings.length > 0) {
-      details += `   • Toppings: ${item.toppings.map(t => t.label).join(', ')}\n`;
-    }
-    return details;
-  }).join('\n');
+  const placedAt = new Date();
+  const whenStr = placedAt.toLocaleString(undefined, {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const orderSummary = orderItems
+    .map((item, index) => {
+      const lines = [
+        `ITEM ${index + 1} — ${item.drink.name}`,
+        `  Sugar    ${item.sugar}`,
+        `  Ice      ${item.ice}`,
+        `  Milk     ${item.milk}`,
+      ];
+      if (item.extraMatcha) {
+        lines.push(`  Add-on   +1g extra matcha`);
+      }
+      if (item.toppings && item.toppings.length > 0) {
+        lines.push(`  Toppings ${item.toppings.map((t) => t.label).join(', ')}`);
+      }
+      return lines.join('\n');
+    })
+    .join('\n\n' + '─'.repeat(36) + '\n\n');
 
   const formData = {
     access_key: accessKey,
-    subject: `🍵 New Order: ${customerName} (${orderItems.length} items)`,
+    subject: `New order — ${customerName} (${orderItems.length} item${orderItems.length === 1 ? '' : 's'})`,
     from_name: "Vy's Cafe Order System",
-    message: `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-       🍵 NEW ORDER RECEIVED 🍵
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-CUSTOMER:  ${customerName}
-DATE:      ${new Date().toLocaleDateString()}
-TIME:      ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-TOTAL:     ${orderItems.length} item(s)
-
-ORDER DETAILS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${orderSummary}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    `.trim(),
+    message: [
+      "NEW ORDER — Vy's Matcha",
+      '═'.repeat(40),
+      '',
+      `Customer    ${customerName}`,
+      `Placed      ${whenStr}`,
+      `Line items  ${orderItems.length}`,
+      '',
+      '─'.repeat(40),
+      '',
+      orderSummary,
+      '',
+      '─'.repeat(40),
+      '',
+      'Reply from this thread to follow up with the customer if needed.',
+    ].join('\n'),
   };
 
   try {
