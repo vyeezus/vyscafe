@@ -183,6 +183,15 @@ body {
 
 .card-svg { flex-shrink: 0; }
 
+/* Scaled cutouts overflow layout; reserve space so shadow + cup don't paint over the title */
+.card-svg:has(.drink-photo-wrap--scaled) {
+  padding-bottom: 52px;
+}
+.drink-card .card-body {
+  position: relative;
+  z-index: 2;
+}
+
 /* Transparent cutout photos (jas, map): scale wrapper + small contact shadow under cup */
 .drink-photo-wrap--scaled {
   position: relative;
@@ -276,6 +285,13 @@ body {
 
 .modal-header { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 24px; }
 .modal-svg { flex-shrink: 0; }
+.modal-svg:has(.drink-photo-wrap--scaled) {
+  padding-bottom: 40px;
+}
+.modal-header .modal-info {
+  position: relative;
+  z-index: 2;
+}
 
 .modal-name { font-family: 'Lora', serif; font-size: 22px; font-weight: 500; color: var(--ink); line-height: 1.2; margin-bottom: 4px; }
 .modal-desc { font-size: 13px; font-weight: 300; color: var(--stone); line-height: 1.5; }
