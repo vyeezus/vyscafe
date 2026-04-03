@@ -71,6 +71,7 @@ const CUSTOM_IMAGES = {
   str: './str_matcha.png',
   jas: './jasmine_matcha.png',
   pan: './pandan_matcha.png',
+  map: './maple_matcha_transparent.png',
   jstr: './strawberry_jasmine.jpg',
   jman: './mango_jasmine.jpg',
   jpas: './passionfruit_jasmine.jpg',
@@ -83,7 +84,7 @@ const CUSTOM_IMAGES = {
 };
 
 /** Product photos with alpha — skip multiply so they match the page like other cutouts */
-const CUSTOM_IMG_NO_MULTIPLY = new Set(['jas']);
+const CUSTOM_IMG_NO_MULTIPLY = new Set(['jas', 'map']);
 
 function getSVG(id, large) {
   if (CUSTOM_IMAGES[id]) {
