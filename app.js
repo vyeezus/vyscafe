@@ -88,8 +88,14 @@ const CUSTOM_IMG_NO_MULTIPLY = new Set(['jas', 'map']);
 
 function getSVG(id, large) {
   if (CUSTOM_IMAGES[id]) {
-    const blend = CUSTOM_IMG_NO_MULTIPLY.has(id) ? '' : ' mix-blend-mode: multiply;';
-    return `<img src="${CUSTOM_IMAGES[id]}" style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;object-fit:contain; transform: scale(1.75);${blend}" alt="Drink">`;
+    const noMultiply = CUSTOM_IMG_NO_MULTIPLY.has(id);
+    const blend = noMultiply ? '' : ' mix-blend-mode: multiply;';
+    const groundShadow = noMultiply
+      ? large
+        ? ' filter: drop-shadow(0 12px 10px rgba(74,112,66,0.22)) drop-shadow(0 20px 16px rgba(74,112,66,0.12));'
+        : ' filter: drop-shadow(0 8px 7px rgba(74,112,66,0.24)) drop-shadow(0 14px 11px rgba(74,112,66,0.12));'
+      : '';
+    return `<img src="${CUSTOM_IMAGES[id]}" style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;object-fit:contain; transform: scale(1.75);${blend}${groundShadow}" alt="Drink">`;
   }
   const svg = (typeof DRINK_SVGS !== 'undefined' && DRINK_SVGS[id]) || '';
   if (!svg) return `<div style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;background:rgba(106,148,98,0.1);border-radius:12px;"></div>`;
