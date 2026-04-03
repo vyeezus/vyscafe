@@ -29,7 +29,7 @@ sections.forEach(sec => {
       if (cleanedTitle === 'Signature Einspanner') result['ein'] = svg;
       if (cleanedTitle === 'Regular') result['reg'] = svg;
       if (cleanedTitle === 'Strawberry') result['str'] = svg;
-      if (cleanedTitle === 'Jasmine Tea Matcha Cloud') result['jas'] = svg;
+      if (cleanedTitle === 'Jasmine Matcha' || cleanedTitle === 'Jasmine Tea Matcha Cloud') result['jas'] = svg;
       if (cleanedTitle === 'Pandan') result['pan'] = svg;
       if (cleanedTitle === 'Coconut Cloud') result['coc'] = svg;
       if (cleanedTitle === 'Maple') result['map'] = svg;

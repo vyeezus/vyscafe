@@ -4,7 +4,7 @@ const DRINKS = {
     { id: 'ein', name: 'Signature Einspanner', desc: 'Matcha with pillowy cream top', emoji: '🍵', seasonal: false },
     { id: 'reg', name: 'Regular Matcha Latte', desc: 'Classic matcha with your choice of milk', emoji: '🍵', seasonal: false },
     { id: 'str', name: 'Strawberry Matcha', desc: 'Matcha layered with fresh strawberry', emoji: '🍓', seasonal: false },
-    { id: 'jas', name: 'Jasmine Tea Matcha Cloud', desc: 'Jasmine milk tea with matcha cloud', emoji: '🌸', seasonal: false },
+    { id: 'jas', name: 'Jasmine Matcha', desc: 'Matcha latte infused with jasmine tea', emoji: '🌸', seasonal: false },
     { id: 'pan', name: 'Pandan Matcha', desc: 'Pandan infused matcha latte', emoji: '🌿', seasonal: false },
     { id: 'coc', name: 'Coconut Cloud', desc: 'Coconut water with matcha cream top', emoji: '🥥', seasonal: false },
     { id: 'map', name: 'Maple Matcha', desc: 'Matcha with pure maple syrup', emoji: '🍁', seasonal: false },
@@ -83,10 +83,13 @@ const CUSTOM_IMAGES = {
   man: './mango_matcha.jpg'
 };
 
+/** Product photos with alpha — skip multiply so they match the page like other cutouts */
+const CUSTOM_IMG_NO_MULTIPLY = new Set(['jas', 'map']);
 
 function getSVG(id, large) {
   if (CUSTOM_IMAGES[id]) {
-    return `<img src="${CUSTOM_IMAGES[id]}" style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;object-fit:contain; transform: scale(1.75); mix-blend-mode: multiply;" alt="Drink">`;
+    const blend = CUSTOM_IMG_NO_MULTIPLY.has(id) ? '' : ' mix-blend-mode: multiply;';
+    return `<img src="${CUSTOM_IMAGES[id]}" style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;object-fit:contain; transform: scale(1.75);${blend}" alt="Drink">`;
   }
   const svg = (typeof DRINK_SVGS !== 'undefined' && DRINK_SVGS[id]) || '';
   if (!svg) return `<div style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;background:rgba(106,148,98,0.1);border-radius:12px;"></div>`;
