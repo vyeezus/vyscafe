@@ -1,10 +1,10 @@
 // ─── DRINK DATA ──────────────────────────────────────────────
 const DRINKS = {
   matcha: [
-    { id: 'ein', name: 'Signature Einspanner', desc: 'Matcha with pillowy cream top', emoji: '🍵', seasonal: false },
+    { id: 'ein', name: 'Signature Einspanner', desc: 'Matcha with pillowy cream top', emoji: '🍵', seasonal: false, popular: true },
+    { id: 'str', name: 'Strawberry Matcha', desc: 'Matcha layered with fresh strawberry', emoji: '🍓', seasonal: false, popular: true },
+    { id: 'jas', name: 'Jasmine Matcha', desc: 'Matcha latte infused with jasmine tea', emoji: '🌸', seasonal: false, popular: true },
     { id: 'reg', name: 'Regular Matcha Latte', desc: 'Classic matcha with your choice of milk', emoji: '🍵', seasonal: false },
-    { id: 'str', name: 'Strawberry Matcha', desc: 'Matcha layered with fresh strawberry', emoji: '🍓', seasonal: false },
-    { id: 'jas', name: 'Jasmine Matcha', desc: 'Matcha latte infused with jasmine tea', emoji: '🌸', seasonal: false },
     { id: 'pan', name: 'Pandan Matcha', desc: 'Pandan infused matcha latte', emoji: '🌿', seasonal: false },
     { id: 'coc', name: 'Coconut Cloud', desc: 'Coconut water with matcha cream top', emoji: '🥥', seasonal: false },
     { id: 'map', name: 'Maple Matcha', desc: 'Matcha with pure maple syrup', emoji: '🍁', seasonal: false },
@@ -111,7 +111,7 @@ function renderDrinks() {
       <div class="drink-card" data-id="${d.id}" data-cat="${cat}" tabindex="0" role="button" aria-label="Customize ${d.name}">
         <div class="card-svg">${getSVG(d.id, false)}</div>
         <div class="card-body">
-          <div class="card-name">${d.name}${d.seasonal ? '<span class="tag-seasonal">Seasonal</span>' : ''}</div>
+          <div class="card-name">${d.popular ? '<span class="tag-favorite"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15 12L12 22L9 12L12 2Z M2 12L12 15L22 12L12 9L2 12Z"></path></svg></span>' : ''}${d.name}${d.seasonal ? '<span class="tag-seasonal">Seasonal</span>' : ''}</div>
           <div class="card-desc">${d.desc}</div>
         </div>
         <div class="card-hint">Customize ✦</div>
