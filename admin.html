@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu admin — Vy's Cafe</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-page">
+
+<nav class="nav admin-nav">
+  <div class="nav-brand">
+    <span class="nav-eyebrow">vy's cafe</span>
+    <span class="nav-title">menu admin</span>
+  </div>
+  <a href="index.html" class="admin-back">← Back to menu</a>
+</nav>
+
+<main class="admin-main">
+  <p class="admin-lead">
+    Turn drinks on or off and add custom items. Download <code>menu-config.json</code> and replace the file in your site folder, then commit and push — that updates the live menu for everyone.
+    <strong>Apply to this browser only</strong> previews on your device first (saved in local storage). While that exists, it overrides the file on the server for you only — remove key <code>vy_cafe_menu_config</code> in DevTools → Application → Local Storage to go back to the GitHub file.
+  </p>
+
+  <div id="admin-lock" class="admin-lock" hidden>
+    <label>Admin PIN (set in menu-config.json as <code>adminPin</code>)</label>
+    <div class="admin-lock-row">
+      <input type="password" id="admin-pin-input" autocomplete="current-password" placeholder="PIN">
+      <button type="button" class="admin-btn primary" id="admin-pin-submit">Unlock</button>
+    </div>
+    <p class="admin-hint" id="admin-pin-msg"></p>
+  </div>
+
+  <div id="admin-panel" class="admin-panel" hidden>
+    <section class="admin-section">
+      <h2>Drinks on the menu</h2>
+      <p class="admin-hint">Uncheck to hide a drink (it stays in your code; you can show it again anytime).</p>
+      <div id="admin-base-list"></div>
+    </section>
+
+    <section class="admin-section">
+      <h2>Custom drinks</h2>
+      <div id="admin-additions-list"></div>
+
+      <h3 class="admin-subh">Add a drink</h3>
+      <form id="admin-add-form" class="admin-form">
+        <label>Category
+          <select name="cat" required>
+            <option value="matcha">Matcha</option>
+            <option value="jasmine">Jasmine green tea</option>
+            <option value="other_tea">Specialty tea</option>
+          </select>
+        </label>
+        <label>Name <input name="name" required maxlength="80" placeholder="e.g. Iced Lavender Matcha"></label>
+        <label>Description <input name="desc" required maxlength="200" placeholder="Short line for the card"></label>
+        <label>Emoji <input name="emoji" maxlength="8" placeholder="🍵"></label>
+        <label class="admin-check"><input type="checkbox" name="seasonal"> Seasonal tag</label>
+        <label class="admin-check"><input type="checkbox" name="popular"> Favorite star (matcha section)</label>
+        <label class="admin-check"><input type="checkbox" name="hideMilk"> Hide milk choice (fixed recipe)</label>
+        <label class="admin-check"><input type="checkbox" name="oatMilkNote"> Show “comes with oat milk” note</label>
+        <button type="submit" class="admin-btn primary">Add to list</button>
+      </form>
+    </section>
+
+    <section class="admin-section">
+      <h2>Optional PIN</h2>
+      <p class="admin-hint">If set, this page asks for a PIN. Stored in JSON as <code>adminPin</code> (anyone can read the file — use only as a light deterrent).</p>
+      <label class="admin-pin-field">New PIN (leave blank to keep the current one from your JSON file)
+        <input type="password" id="export-admin-pin" autocomplete="new-password" placeholder="optional">
+      </label>
+      <label class="admin-check" style="margin-top:12px">
+        <input type="checkbox" id="clear-admin-pin"> Remove PIN from the next download / browser save
+      </label>
+    </section>
+
+    <section class="admin-section admin-actions">
+      <button type="button" class="admin-btn primary" id="btn-download">Download menu-config.json</button>
+      <button type="button" class="admin-btn" id="btn-local">Apply to this browser only</button>
+      <label class="admin-file-btn admin-btn">
+        Load JSON file
+        <input type="file" id="btn-load-file" accept=".json,application/json" hidden>
+      </label>
+      <p class="admin-status" id="admin-status" role="status"></p>
+    </section>
+
+    <section class="admin-section admin-help">
+      <h2>GitHub Pages</h2>
+      <ol>
+        <li>Download the JSON.</li>
+        <li>In your repo, replace <code>menu-config.json</code> with the new file.</li>
+        <li>Commit and push to <code>main</code>.</li>
+      </ol>
+    </section>
+  </div>
+</main>
+
+<script src="drinks-data.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

@@ -1,27 +1,72 @@
 // ─── DRINK DATA ──────────────────────────────────────────────
-const DRINKS = {
-  matcha: [
-    { id: 'ein', name: 'Einspanner', desc: 'Matcha with pillowy cream top', emoji: '🍵', seasonal: false, popular: true },
-    { id: 'str', name: 'Strawberry Matcha', desc: 'Matcha layered with fresh strawberry', emoji: '🍓', seasonal: false, popular: true },
-    { id: 'jas', name: 'Jasmine Matcha', desc: 'Matcha latte infused with jasmine tea', emoji: '🌸', seasonal: false, popular: true },
-    { id: 'reg', name: 'Regular Matcha Latte', desc: 'Classic matcha with your choice of milk', emoji: '🍵', seasonal: false },
-    { id: 'pan', name: 'Pandan Matcha', desc: 'Pandan infused matcha latte', emoji: '🌿', seasonal: false },
-    { id: 'coc', name: 'Coconut Cloud', desc: 'Coconut water with matcha cream top', emoji: '🥥', seasonal: false },
-    { id: 'map', name: 'Maple Matcha', desc: 'Matcha with pure maple syrup', emoji: '🍁', seasonal: false },
-    { id: 'man', name: 'Mango Matcha', desc: 'Matcha layered with ripe mango', emoji: '🥭', seasonal: true },
-    { id: 'ube', name: 'Ube Matcha', desc: 'Matcha latte with ube cold foam', emoji: '💜', seasonal: false },
-  ],
-  jasmine: [
-    { id: 'jh', name: 'Honey Jasmine', desc: 'Jasmine green tea with wildflower honey', emoji: '🍯' },
-    { id: 'jstr', name: 'Strawberry Jasmine', desc: 'Jasmine green tea with fresh strawberry', emoji: '🍓' },
-    { id: 'jman', name: 'Mango Jasmine', desc: 'Jasmine green tea with fresh mango puree', emoji: '🥭' },
-    { id: 'jpas', name: 'Passionfruit Jasmine', desc: 'Jasmine green tea with tangy passionfruit', emoji: '🧪' },
-  ],
-  other_tea: [
-    { id: 'tt', name: 'Thai Tea', desc: 'Thai-spiced black tea, sweet & creamy', emoji: '🧡' },
-    { id: 'tg', name: 'Thai Green Tea', desc: 'Thai green tea base, condensed milk', emoji: '🌿' },
-  ]
-};
+// Base list lives in drinks-data.js (window.BASE_DRINKS). Merged with menu-config.json on load.
+let DRINKS = {};
+
+const MENU_CONFIG_STORAGE_KEY = 'vy_cafe_menu_config';
+
+function cloneDrinks(base) {
+  return JSON.parse(JSON.stringify(base));
+}
+
+function applyMenuConfig(base, cfg) {
+  const hidden = new Set(cfg.hidden || []);
+  const out = {};
+  const cats = Object.keys(base);
+  for (const cat of cats) {
+    const core = (base[cat] || [])
+      .filter((d) => !hidden.has(d.id))
+      .map((d) => ({ ...d }));
+    const added = (cfg.additions && cfg.additions[cat]) || [];
+    const normalized = added.map((d) => ({
+      seasonal: false,
+      popular: false,
+      hideMilk: false,
+      oatMilkNote: false,
+      ...d,
+    }));
+    out[cat] = core.concat(normalized);
+  }
+  return out;
+}
+
+function normalizeMenuConfig(raw) {
+  const empty = { matcha: [], jasmine: [], other_tea: [] };
+  if (!raw || typeof raw !== 'object') return { hidden: [], additions: { ...empty } };
+  const hidden = Array.isArray(raw.hidden) ? raw.hidden : [];
+  const a = raw.additions || {};
+  return {
+    hidden,
+    additions: {
+      matcha: Array.isArray(a.matcha) ? a.matcha : [],
+      jasmine: Array.isArray(a.jasmine) ? a.jasmine : [],
+      other_tea: Array.isArray(a.other_tea) ? a.other_tea : [],
+    },
+  };
+}
+
+async function loadMenuConfig() {
+  const empty = normalizeMenuConfig({});
+  try {
+    const local = localStorage.getItem(MENU_CONFIG_STORAGE_KEY);
+    if (local) return normalizeMenuConfig(JSON.parse(local));
+  } catch (_) {}
+  try {
+    const res = await fetch(`menu-config.json?_=${Date.now()}`, { cache: 'no-store' });
+    if (res.ok) return normalizeMenuConfig(await res.json());
+  } catch (_) {}
+  return empty;
+}
+
+async function initMenu() {
+  const base = window.BASE_DRINKS;
+  if (!base) {
+    console.error('BASE_DRINKS missing — load drinks-data.js before app.js');
+    DRINKS = { matcha: [], jasmine: [], other_tea: [] };
+    return;
+  }
+  const cfg = await loadMenuConfig();
+  DRINKS = applyMenuConfig(cloneDrinks(base), cfg);
+}
 
 const TOPPINGS = [
   { id: 'boba', label: 'Boba Pearls', icon: '⚫' },
@@ -86,9 +131,6 @@ const CUSTOM_IMAGES = {
 /** Product photos with alpha — skip multiply so transparent PNGs render correctly */
 const CUSTOM_IMG_NO_MULTIPLY = new Set([]);
 
-/** Drinks that get a soft drop-shadow to match the organic look of mango matcha */
-const CUSTOM_IMG_SHADOW = new Set(['jas', 'map']);
-
 function getSVG(id, large) {
   if (CUSTOM_IMAGES[id]) {
     const noMultiply = CUSTOM_IMG_NO_MULTIPLY.has(id);
@@ -151,7 +193,7 @@ function openModal(id, cat) {
   modalName.textContent = drink.name;
   
   let extraDesc = '';
-  if (['jas', 'pan'].includes(id)) {
+  if (['jas', 'pan'].includes(id) || drink.oatMilkNote) {
     extraDesc = ' (automatically comes with oat milk)';
   }
   modalDesc.textContent = drink.desc + extraDesc;
@@ -219,7 +261,9 @@ function renderToppings(cat) {
 const milkSection = document.getElementById('milk-section');
 
 function renderMilk() {
-  const isNoMilkOption = ['jstr', 'jman', 'jpas', 'jas', 'coc', 'pan', 'tt', 'tg'].includes(modal.drink.id);
+  const defaultNoMilk = ['jstr', 'jman', 'jpas', 'jas', 'coc', 'pan', 'tt', 'tg'];
+  const isNoMilkOption =
+    defaultNoMilk.includes(modal.drink.id) || modal.drink.hideMilk === true;
   milkSection.style.display = isNoMilkOption ? 'none' : '';
 
   if (isNoMilkOption) return;
@@ -375,8 +419,11 @@ function showToast(msg, durationMs = 2200) {
 }
 
 // ─── INIT ────────────────────────────────────────────────────
-renderDrinks();
-renderCart();
+(async () => {
+  await initMenu();
+  renderDrinks();
+  renderCart();
+})();
 
 // ─── EMAIL NOTIFICATIONS ─────────────────────────────────────
 async function sendEmailNotification(orderItems, customerName = 'Guest') {
