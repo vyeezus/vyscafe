@@ -18,53 +18,29 @@
 </nav>
 
 <main class="admin-main">
-  <p class="admin-lead" id="admin-firebase-off" hidden>
-    Firebase is not configured yet (see <strong>One-time setup</strong> below). Until then, visibility follows <code>menu-config.json</code> in the repo only.
+  <p class="admin-lead">
+    <strong>Why isn’t this one click?</strong> vyscafe.com is hosted as <em>static files</em> on GitHub Pages — there is no server that can save changes from the browser. Your booking site almost certainly stores “open days” on <em>another company’s servers</em> (Calendly, Google Calendar, Squarespace form, etc.). That’s the same idea as Firebase, just under a different name.
+    <br><br>
+    Here you only maintain one small file, <code>menu-config.json</code>, in your GitHub repo. This page builds that file for you; you paste or commit it in GitHub (about the same as editing a file in your booking dashboard).
   </p>
 
-  <section class="admin-section admin-help" id="admin-setup">
-    <h2>One-time setup (live hide / show)</h2>
-    <ol class="admin-setup-list">
-      <li>Create a <a href="https://console.firebase.google.com/" target="_blank" rel="noopener">Firebase</a> project.</li>
-      <li>Enable <strong>Firestore Database</strong> (start in production mode, then paste rules below).</li>
-      <li>Enable <strong>Authentication</strong> → Sign-in method → <strong>Email/Password</strong>.</li>
-      <li>Add yourself: Authentication → <strong>Add user</strong> (the email must match the rule in step 6).</li>
-      <li>Project settings → Your apps → Web → copy config into <code>firebase-config.js</code> in this repo and push.</li>
-      <li>Firestore → <strong>Rules</strong> — use the template in <code>firestore.rules.example</code>: replace <code>YOUR_EMAIL@example.com</code> with your login email, then <strong>Publish</strong>.</li>
-    </ol>
-    <p class="admin-hint">The Firebase “API key” in the config is public by design; real protection is the Firestore rules + your password.</p>
+  <section class="admin-section">
+    <h2>Drinks on the menu</h2>
+    <p class="admin-hint">Uncheck to hide. Then use the buttons below and save the file on GitHub — vyscafe.com updates after the next deploy (usually seconds).</p>
+    <div id="admin-base-list"></div>
   </section>
 
-  <div id="admin-auth" class="admin-section">
-    <h2>Sign in</h2>
-    <p class="admin-hint">Use the same email/password you created in Firebase Authentication.</p>
-    <form id="admin-login-form" class="admin-form admin-form--inline">
-      <label>Email <input type="email" name="email" required autocomplete="username"></label>
-      <label>Password <input type="password" name="password" required autocomplete="current-password"></label>
-      <button type="submit" class="admin-btn primary">Sign in</button>
-    </form>
-    <p class="admin-status" id="admin-auth-msg" role="status"></p>
-  </div>
-
-  <div id="admin-panel" class="admin-panel" hidden>
-    <div class="admin-toolbar">
-      <span id="admin-user-email" class="admin-user"></span>
-      <button type="button" class="admin-btn" id="admin-sign-out">Sign out</button>
+  <section class="admin-section admin-actions">
+    <h2>Save to GitHub</h2>
+    <div class="admin-action-row">
+      <button type="button" class="admin-btn primary" id="btn-copy">Copy JSON</button>
+      <button type="button" class="admin-btn" id="btn-download">Download menu-config.json</button>
     </div>
-    <section class="admin-section">
-      <h2>Drinks on vyscafe.com</h2>
-      <p class="admin-hint">Uncheck to hide a drink from the public menu. Changes save to the cloud and the live site updates within a few seconds. New drinks are still added in code (<code>drinks-data.js</code>).</p>
-      <div id="admin-base-list"></div>
-      <p class="admin-status" id="admin-status" role="status"></p>
-    </section>
-  </div>
+    <a class="admin-github-link" id="github-edit-link" href="#" target="_blank" rel="noopener">Open menu-config.json in GitHub (paste & commit) →</a>
+    <p class="admin-status" id="admin-status" role="status"></p>
+  </section>
 </main>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="firebase-init.js"></script>
 <script src="drinks-data.js"></script>
 <script src="admin.js"></script>
 </body>

@@ -1,8 +1,6 @@
 // ─── DRINK DATA ──────────────────────────────────────────────
-// Base list: drinks-data.js (window.BASE_DRINKS). Visibility: Firestore config/menu.hidden, or menu-config.json fallback.
+// Base list: drinks-data.js. Which drinks are hidden: menu-config.json in the repo (edit via admin page → GitHub).
 let DRINKS = {};
-
-let menuFirestoreUnsub = null;
 
 function cloneDrinks(base) {
   return JSON.parse(JSON.stringify(base));
@@ -17,7 +15,13 @@ function buildDrinksFromHidden(base, hiddenList) {
   return out;
 }
 
-async function fallbackMenuFromJson(base) {
+async function initMenu() {
+  const base = window.BASE_DRINKS;
+  if (!base) {
+    console.error('BASE_DRINKS missing — load drinks-data.js before app.js');
+    DRINKS = { matcha: [], jasmine: [], other_tea: [] };
+    return;
+  }
   let hidden = [];
   try {
     const res = await fetch(`menu-config.json?_=${Date.now()}`, { cache: 'no-store' });
@@ -28,52 +32,6 @@ async function fallbackMenuFromJson(base) {
   } catch (_) {}
   DRINKS = buildDrinksFromHidden(cloneDrinks(base), hidden);
   renderDrinks();
-}
-
-async function initMenu() {
-  const base = window.BASE_DRINKS;
-  if (!base) {
-    console.error('BASE_DRINKS missing — load drinks-data.js before app.js');
-    DRINKS = { matcha: [], jasmine: [], other_tea: [] };
-    return;
-  }
-
-  if (window.VY_FIREBASE_ACTIVE && typeof firebase !== 'undefined') {
-    try {
-      const db = firebase.firestore();
-      let firstEmit = true;
-      await new Promise((resolve, reject) => {
-        menuFirestoreUnsub = db.collection('config').doc('menu').onSnapshot(
-          (snap) => {
-            const hidden = snap.exists ? snap.data().hidden || [] : [];
-            DRINKS = buildDrinksFromHidden(cloneDrinks(base), hidden);
-            renderDrinks();
-            if (firstEmit) {
-              firstEmit = false;
-              resolve();
-            }
-          },
-          (err) => {
-            if (firstEmit) {
-              firstEmit = false;
-              reject(err);
-            } else {
-              console.error('Menu sync error', err);
-            }
-          }
-        );
-      });
-      return;
-    } catch (e) {
-      if (menuFirestoreUnsub) {
-        menuFirestoreUnsub();
-        menuFirestoreUnsub = null;
-      }
-      console.warn('Firestore menu unavailable, using menu-config.json', e);
-    }
-  }
-
-  await fallbackMenuFromJson(base);
 }
 
 const TOPPINGS = [

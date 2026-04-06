@@ -1,4 +1,8 @@
 (function () {
+  /** Change if you fork the repo */
+  const GITHUB_EDIT_MENU_CONFIG =
+    'https://github.com/vyeezus/vyscafe/edit/main/menu-config.json';
+
   const CAT_LABELS = {
     matcha: 'Matcha',
     jasmine: 'Jasmine green tea',
@@ -7,7 +11,6 @@
 
   /** @type {Set<string>} */
   let hidden = new Set();
-  let saveTimer = null;
 
   function esc(s) {
     const d = document.createElement('div');
@@ -15,9 +18,8 @@
     return d.innerHTML;
   }
 
-  function setAuthMsg(msg) {
-    const el = document.getElementById('admin-auth-msg');
-    if (el) el.textContent = msg || '';
+  function exportJson() {
+    return JSON.stringify({ hidden: [...hidden].sort() }, null, 2) + '\n';
   }
 
   function setStatus(msg) {
@@ -48,7 +50,7 @@
         cb.addEventListener('change', () => {
           if (cb.checked) hidden.delete(d.id);
           else hidden.add(d.id);
-          scheduleSave();
+          setStatus('');
         });
         block.appendChild(row);
       }
@@ -56,105 +58,38 @@
     }
   }
 
-  function scheduleSave() {
-    if (!window.VY_FIREBASE_ACTIVE || typeof firebase === 'undefined') {
-      setStatus('Configure Firebase to save.');
-      return;
-    }
-    const u = firebase.auth().currentUser;
-    if (!u) {
-      setStatus('Sign in to save.');
-      return;
-    }
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(pushHidden, 450);
-  }
+  async function boot() {
+    const link = document.getElementById('github-edit-link');
+    if (link) link.href = GITHUB_EDIT_MENU_CONFIG;
 
-  async function pushHidden() {
-    const u = firebase.auth().currentUser;
-    if (!u) return;
-    setStatus('Saving…');
     try {
-      await firebase
-        .firestore()
-        .collection('config')
-        .doc('menu')
-        .set(
-          {
-            hidden: [...hidden].sort(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
-      setStatus('Saved. Live site updates in a few seconds.');
-    } catch (e) {
-      setStatus('Save failed: ' + (e && e.message ? e.message : String(e)));
-    }
-  }
-
-  async function loadHiddenFromFirestore() {
-    const snap = await firebase.firestore().collection('config').doc('menu').get();
-    const list = snap.exists ? snap.data().hidden || [] : [];
-    hidden = new Set(Array.isArray(list) ? list : []);
-    renderList();
-  }
-
-  function showPanel(user) {
-    document.getElementById('admin-auth').hidden = true;
-    document.getElementById('admin-panel').hidden = false;
-    document.getElementById('admin-user-email').textContent = user.email || '';
-  }
-
-  function showAuth() {
-    document.getElementById('admin-auth').hidden = false;
-    document.getElementById('admin-panel').hidden = true;
-  }
-
-  document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!window.VY_FIREBASE_ACTIVE) {
-      setAuthMsg('Add your Firebase config to firebase-config.js first.');
-      return;
-    }
-    const fd = new FormData(e.target);
-    const email = String(fd.get('email') || '').trim();
-    const password = String(fd.get('password') || '');
-    setAuthMsg('Signing in…');
-    try {
-      await firebase.auth().signInWithEmailAndPassword(email, password);
-      setAuthMsg('');
-    } catch (err) {
-      setAuthMsg(err.message || 'Sign-in failed');
-    }
-  });
-
-  document.getElementById('admin-sign-out').addEventListener('click', () => {
-    firebase.auth().signOut();
-  });
-
-  function boot() {
-    const firebaseOff = document.getElementById('admin-firebase-off');
-    if (!window.VY_FIREBASE_ACTIVE) {
-      if (firebaseOff) firebaseOff.hidden = false;
-      document.getElementById('admin-auth').hidden = true;
-      document.getElementById('admin-panel').hidden = true;
-      return;
-    }
-    if (firebaseOff) firebaseOff.hidden = true;
-
-    firebase.auth().onAuthStateChanged(async (user) => {
-      if (user) {
-        try {
-          await loadHiddenFromFirestore();
-          showPanel(user);
-        } catch (err) {
-          setAuthMsg('Could not load menu: ' + (err.message || String(err)));
-          showAuth();
-        }
-      } else {
-        showAuth();
-        setAuthMsg('');
+      const res = await fetch(`menu-config.json?_=${Date.now()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const j = await res.json();
+        hidden = new Set(Array.isArray(j.hidden) ? j.hidden : []);
       }
+    } catch (_) {}
+
+    renderList();
+
+    document.getElementById('btn-copy').addEventListener('click', async () => {
+      const text = exportJson();
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus('Copied. Open the GitHub link, replace the file contents, commit.');
+      } catch {
+        setStatus('Copy failed — use Download instead.');
+      }
+    });
+
+    document.getElementById('btn-download').addEventListener('click', () => {
+      const blob = new Blob([exportJson()], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'menu-config.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      setStatus('Downloaded. Upload to repo or paste into GitHub editor.');
     });
   }
 
