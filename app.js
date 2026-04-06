@@ -1,60 +1,33 @@
 // ─── DRINK DATA ──────────────────────────────────────────────
-// Base list lives in drinks-data.js (window.BASE_DRINKS). Merged with menu-config.json on load.
+// Base list: drinks-data.js (window.BASE_DRINKS). Visibility: Firestore config/menu.hidden, or menu-config.json fallback.
 let DRINKS = {};
 
-const MENU_CONFIG_STORAGE_KEY = 'vy_cafe_menu_config';
+let menuFirestoreUnsub = null;
 
 function cloneDrinks(base) {
   return JSON.parse(JSON.stringify(base));
 }
 
-function applyMenuConfig(base, cfg) {
-  const hidden = new Set(cfg.hidden || []);
+function buildDrinksFromHidden(base, hiddenList) {
+  const hidden = new Set(hiddenList || []);
   const out = {};
-  const cats = Object.keys(base);
-  for (const cat of cats) {
-    const core = (base[cat] || [])
-      .filter((d) => !hidden.has(d.id))
-      .map((d) => ({ ...d }));
-    const added = (cfg.additions && cfg.additions[cat]) || [];
-    const normalized = added.map((d) => ({
-      seasonal: false,
-      popular: false,
-      hideMilk: false,
-      oatMilkNote: false,
-      ...d,
-    }));
-    out[cat] = core.concat(normalized);
+  for (const cat of Object.keys(base)) {
+    out[cat] = (base[cat] || []).filter((d) => !hidden.has(d.id)).map((d) => ({ ...d }));
   }
   return out;
 }
 
-function normalizeMenuConfig(raw) {
-  const empty = { matcha: [], jasmine: [], other_tea: [] };
-  if (!raw || typeof raw !== 'object') return { hidden: [], additions: { ...empty } };
-  const hidden = Array.isArray(raw.hidden) ? raw.hidden : [];
-  const a = raw.additions || {};
-  return {
-    hidden,
-    additions: {
-      matcha: Array.isArray(a.matcha) ? a.matcha : [],
-      jasmine: Array.isArray(a.jasmine) ? a.jasmine : [],
-      other_tea: Array.isArray(a.other_tea) ? a.other_tea : [],
-    },
-  };
-}
-
-async function loadMenuConfig() {
-  const empty = normalizeMenuConfig({});
-  try {
-    const local = localStorage.getItem(MENU_CONFIG_STORAGE_KEY);
-    if (local) return normalizeMenuConfig(JSON.parse(local));
-  } catch (_) {}
+async function fallbackMenuFromJson(base) {
+  let hidden = [];
   try {
     const res = await fetch(`menu-config.json?_=${Date.now()}`, { cache: 'no-store' });
-    if (res.ok) return normalizeMenuConfig(await res.json());
+    if (res.ok) {
+      const j = await res.json();
+      hidden = Array.isArray(j.hidden) ? j.hidden : [];
+    }
   } catch (_) {}
-  return empty;
+  DRINKS = buildDrinksFromHidden(cloneDrinks(base), hidden);
+  renderDrinks();
 }
 
 async function initMenu() {
@@ -64,8 +37,43 @@ async function initMenu() {
     DRINKS = { matcha: [], jasmine: [], other_tea: [] };
     return;
   }
-  const cfg = await loadMenuConfig();
-  DRINKS = applyMenuConfig(cloneDrinks(base), cfg);
+
+  if (window.VY_FIREBASE_ACTIVE && typeof firebase !== 'undefined') {
+    try {
+      const db = firebase.firestore();
+      let firstEmit = true;
+      await new Promise((resolve, reject) => {
+        menuFirestoreUnsub = db.collection('config').doc('menu').onSnapshot(
+          (snap) => {
+            const hidden = snap.exists ? snap.data().hidden || [] : [];
+            DRINKS = buildDrinksFromHidden(cloneDrinks(base), hidden);
+            renderDrinks();
+            if (firstEmit) {
+              firstEmit = false;
+              resolve();
+            }
+          },
+          (err) => {
+            if (firstEmit) {
+              firstEmit = false;
+              reject(err);
+            } else {
+              console.error('Menu sync error', err);
+            }
+          }
+        );
+      });
+      return;
+    } catch (e) {
+      if (menuFirestoreUnsub) {
+        menuFirestoreUnsub();
+        menuFirestoreUnsub = null;
+      }
+      console.warn('Firestore menu unavailable, using menu-config.json', e);
+    }
+  }
+
+  await fallbackMenuFromJson(base);
 }
 
 const TOPPINGS = [
