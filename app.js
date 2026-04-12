@@ -80,6 +80,7 @@ const CUSTOM_IMAGES = {
   ein: './matcha_einspanner.png',
   reg: './regular_matcha.png',
   str: './str_matcha.png',
+  bbm: './blueberry_matcha.png',
   jas: './jas_matcha_v12_final.jpg',
   pan: './pandan_matcha.png',
   map: './maple_matcha_v12_final.jpg',
@@ -101,7 +102,7 @@ function getSVG(id, large) {
   if (CUSTOM_IMAGES[id]) {
     const noMultiply = CUSTOM_IMG_NO_MULTIPLY.has(id);
     const blend = noMultiply ? '' : ' mix-blend-mode: multiply;';
-    return `<img src="${CUSTOM_IMAGES[id]}?v=3535" style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;object-fit:contain; transform: scale(1.75);${blend}" alt="Drink">`;
+    return `<img src="${CUSTOM_IMAGES[id]}?v=3536" style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;object-fit:contain; transform: scale(1.75);${blend}" alt="Drink">`;
   }
   const svg = (typeof DRINK_SVGS !== 'undefined' && DRINK_SVGS[id]) || '';
   if (!svg) return `<div style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;background:rgba(106,148,98,0.1);border-radius:12px;"></div>`;
