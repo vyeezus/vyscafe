@@ -20,7 +20,7 @@ window.BASE_DRINKS = {
     { id: 'jstr', name: 'Strawberry Jasmine', desc: 'Jasmine green tea with fresh strawberry', emoji: '🍓' },
     { id: 'jman', name: 'Mango Jasmine', desc: 'Jasmine green tea with fresh mango puree', emoji: '🥭' },
     { id: 'jpas', name: 'Passionfruit Jasmine', desc: 'Jasmine green tea with tangy passionfruit', emoji: '🧪' },
-    { id: 'jgam', name: 'Green Apple Mango Jasmine Tea', desc: 'Jasmine green tea with green apple mango flavor and boba', emoji: '🍏' },
+    { id: 'jgam', name: 'Green Apple Mango Jasmine Tea', desc: 'Jasmine green tea with green apple mango flavor', emoji: '🍏' },
   ],
   other_tea: [
     { id: 'tt', name: 'Thai Tea', desc: 'Thai-spiced black tea, sweet & creamy', emoji: '🧡' },
