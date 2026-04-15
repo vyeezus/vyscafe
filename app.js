@@ -122,7 +122,7 @@ function renderDrinks() {
         <div class="card-svg">${getSVG(d.id, false)}</div>
         <div class="card-body">
           <div class="card-name">${d.popular ? '<span class="tag-favorite"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15 12L12 22L9 12L12 2Z M2 12L12 15L22 12L12 9L2 12Z"></path></svg></span>' : ''}${d.name}</div>
-          ${d.seasonal ? '<div class="tag-seasonal">Seasonal</div>' : ''}
+          ${(d.tag || (d.seasonal ? 'Seasonal' : '')) ? `<div class="tag-seasonal">${d.tag || 'Seasonal'}</div>` : ''}
           <div class="card-desc">${d.desc}</div>
         </div>
         <div class="card-hint">Customize ✦</div>
