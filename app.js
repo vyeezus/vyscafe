@@ -87,6 +87,7 @@ const CUSTOM_IMAGES = {
   jstr: './strawberry_jasmine.jpg',
   jman: './mango_jasmine.jpg',
   jpas: './passionfruit_jasmine.jpg',
+  jgam: './green_apple_mango_jasmine.png',
   tt: './thai_tea.jpg',
   tg: './thai_green_tea.jpg',
   jh: './honey_jasmine.jpg',
@@ -102,7 +103,7 @@ function getSVG(id, large) {
   if (CUSTOM_IMAGES[id]) {
     const noMultiply = CUSTOM_IMG_NO_MULTIPLY.has(id);
     const blend = noMultiply ? '' : ' mix-blend-mode: multiply;';
-    return `<img src="${CUSTOM_IMAGES[id]}?v=3536" style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;object-fit:contain; transform: scale(1.75);${blend}" alt="Drink">`;
+    return `<img src="${CUSTOM_IMAGES[id]}?v=3537" style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;object-fit:contain; transform: scale(1.75);${blend}" alt="Drink">`;
   }
   const svg = (typeof DRINK_SVGS !== 'undefined' && DRINK_SVGS[id]) || '';
   if (!svg) return `<div style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;background:rgba(106,148,98,0.1);border-radius:12px;"></div>`;
@@ -228,7 +229,7 @@ function renderToppings(cat) {
 const milkSection = document.getElementById('milk-section');
 
 function renderMilk() {
-  const defaultNoMilk = ['jstr', 'jman', 'jpas', 'jas', 'coc', 'pan', 'tt', 'tg'];
+  const defaultNoMilk = ['jstr', 'jman', 'jpas', 'jgam', 'jas', 'coc', 'pan', 'tt', 'tg'];
   const isNoMilkOption =
     defaultNoMilk.includes(modal.drink.id) || modal.drink.hideMilk === true;
   milkSection.style.display = isNoMilkOption ? 'none' : '';
