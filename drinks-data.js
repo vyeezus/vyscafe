@@ -4,10 +4,10 @@
  */
 window.BASE_DRINKS = {
   matcha: [
-    { id: 'ein', name: 'Einspanner', desc: 'Matcha with pillowy cream top', emoji: '🍵', seasonal: false, popular: true },
-    { id: 'str', name: 'Strawberry Matcha', desc: 'Matcha layered with fresh strawberry', emoji: '🍓', seasonal: false, popular: true },
+    { id: 'ein', name: 'Einspanner', desc: 'Matcha with pillowy cream top', emoji: '🍵', seasonal: false },
+    { id: 'str', name: 'Strawberry Matcha', desc: 'Matcha layered with fresh strawberry', emoji: '🍓', seasonal: false },
     { id: 'bbm', name: 'Blueberry Matcha', desc: 'Matcha latte with blueberry', emoji: '🫐', seasonal: false },
-    { id: 'jas', name: 'Jasmine Matcha', desc: 'Matcha latte infused with jasmine tea', emoji: '🌸', seasonal: false, popular: true },
+    { id: 'jas', name: 'Jasmine Matcha', desc: 'Matcha latte infused with jasmine tea', emoji: '🌸', seasonal: false },
     { id: 'reg', name: 'Regular Matcha Latte', desc: 'Classic matcha with your choice of milk', emoji: '🍵', seasonal: false },
     { id: 'pan', name: 'Pandan Matcha', desc: 'Pandan infused matcha latte', emoji: '🌿', seasonal: false },
     { id: 'coc', name: 'Coconut Cloud', desc: 'Coconut water with matcha cream top', emoji: '🥥', seasonal: false },
