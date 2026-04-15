@@ -273,6 +273,16 @@ body {
 .modal-divider { height: 1px; background: var(--border); margin: 18px 0; }
 
 /* Sugar slider */
+.modal-option-hint {
+  font-family: 'Lora', serif;
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--stone);
+  line-height: 1.5;
+  margin: -6px 0 12px;
+  max-width: 320px;
+}
+
 .section-label {
   font-size: 8.5px; font-weight: 500; letter-spacing: 4px; text-transform: uppercase;
   color: var(--matcha-deep); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;

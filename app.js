@@ -45,7 +45,7 @@ const SUGAR_LEVELS = ['No', 'Low', 'Regular', 'Extra'];
 
 // ─── STATE ───────────────────────────────────────────────────
 let cart = [];
-let modal = { drink: null, sugar: 'Regular', toppings: [], milk: 'Oat', ice: 'Regular', qty: 1 };
+let modal = { drink: null, sugar: 'Regular', toppings: [], milk: 'Oat', ice: 'Regular', qty: 1, coldWhisked: false };
 let activeCategory = 'matcha';
 
 // ─── DOM ─────────────────────────────────────────────────────
@@ -156,7 +156,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 function openModal(id, cat) {
   const drink = DRINKS[cat].find(d => d.id === id);
   if (!drink) return;
-  modal = { drink, cat, sugar: 'Regular', toppings: [], milk: 'Oat', ice: 'Regular', qty: 1, extraMatcha: false };
+  modal = { drink, cat, sugar: 'Regular', toppings: [], milk: 'Oat', ice: 'Regular', qty: 1, extraMatcha: false, coldWhisked: false };
 
   modalName.textContent = drink.name;
   
@@ -173,6 +173,7 @@ function openModal(id, cat) {
   renderToppings(cat);
   renderMilk();
   renderIce();
+  renderColdWhisked(cat);
   renderExtraMatcha(cat);
 
   modalOverlay.classList.add('open');
@@ -237,6 +238,13 @@ function drinkHasMilkOption(drink) {
   return !DRINK_IDS_WITHOUT_MILK.includes(drink.id);
 }
 
+/** Coconut cloud, jasmine matcha, pandan matcha — no cold-whisked option */
+const MATCHA_IDS_WITHOUT_COLD_WHISKED = new Set(['coc', 'jas', 'pan']);
+
+function drinkOffersColdWhisked(drink, cat) {
+  return cat === 'matcha' && drink && !MATCHA_IDS_WITHOUT_COLD_WHISKED.has(drink.id);
+}
+
 function renderMilk() {
   const showMilk = drinkHasMilkOption(modal.drink);
   milkSection.style.display = showMilk ? '' : 'none';
@@ -266,6 +274,26 @@ function renderIce() {
     });
   });
 }
+
+// Cold whisked (matcha drinks except coc, jas, pan)
+const coldWhiskedSection = document.getElementById('cold-whisked-section');
+const coldWhiskedDivider = document.getElementById('cold-whisked-divider');
+const coldWhiskedBtn = document.getElementById('cold-whisked-btn');
+
+function renderColdWhisked(cat) {
+  const show = drinkOffersColdWhisked(modal.drink, cat);
+  coldWhiskedSection.style.display = show ? '' : 'none';
+  coldWhiskedDivider.style.display = show ? '' : 'none';
+  modal.coldWhisked = false;
+  coldWhiskedBtn.classList.remove('selected');
+  coldWhiskedBtn.setAttribute('aria-pressed', 'false');
+}
+
+coldWhiskedBtn.addEventListener('click', () => {
+  modal.coldWhisked = !modal.coldWhisked;
+  coldWhiskedBtn.classList.toggle('selected', modal.coldWhisked);
+  coldWhiskedBtn.setAttribute('aria-pressed', String(modal.coldWhisked));
+});
 
 // Extra Matcha (matcha drinks only)
 const extraMatchaSection = document.getElementById('extra-matcha-section');
@@ -297,10 +325,11 @@ document.getElementById('qty-plus').addEventListener('click', () => {
 
 // Add to order
 document.getElementById('add-to-order').addEventListener('click', () => {
-  const { drink, cat, sugar, toppings, milk, ice, qty, extraMatcha } = modal;
+  const { drink, cat, sugar, toppings, milk, ice, qty, extraMatcha, coldWhisked } = modal;
   const tops = toppings.map(t => TOPPINGS.find(x => x.id === t));
+  const cw = drinkOffersColdWhisked(drink, cat) ? coldWhisked : false;
   for (let i = 0; i < qty; i++) {
-    cart.push({ id: Date.now() + i, drink, sugar, toppings: tops, milk, ice, extraMatcha });
+    cart.push({ id: Date.now() + i, drink, sugar, toppings: tops, milk, ice, extraMatcha, coldWhisked: cw });
   }
   closeModal();
   renderCart();
@@ -329,6 +358,7 @@ function renderCart() {
           <div class="cart-item-name">${item.drink.name}</div>
           <div class="cart-item-detail">
             Sugar: ${item.sugar} · Ice: ${item.ice}${drinkHasMilkOption(item.drink) ? ` · Milk: ${item.milk}` : ''}
+            ${item.coldWhisked ? '<br>+ Cold whisked' : ''}
             ${item.extraMatcha ? '<br>+ Extra Matcha (+1g)' : ''}
             ${item.toppings.length ? '<br>+ ' + item.toppings.map(t => t.label).join(', ') : ''}
           </div>
@@ -439,6 +469,9 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
       ];
       if (drinkHasMilkOption(item.drink)) {
         rows.push(lab('Milk', item.milk));
+      }
+      if (item.coldWhisked) {
+        rows.push(lab('Whisk', 'Cold whisked'));
       }
       if (item.extraMatcha) {
         rows.push(lab('Extra', '+1g matcha'));
