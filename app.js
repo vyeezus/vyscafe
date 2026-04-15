@@ -228,13 +228,20 @@ function renderToppings(cat) {
 // Milk
 const milkSection = document.getElementById('milk-section');
 
-function renderMilk() {
-  const defaultNoMilk = ['jstr', 'jman', 'jpas', 'jgam', 'jas', 'coc', 'pan', 'tt', 'tg'];
-  const isNoMilkOption =
-    defaultNoMilk.includes(modal.drink.id) || modal.drink.hideMilk === true;
-  milkSection.style.display = isNoMilkOption ? 'none' : '';
+/** Same rules as the milk section in the modal — cart + order email must match. */
+const DRINK_IDS_WITHOUT_MILK = ['jstr', 'jman', 'jpas', 'jgam', 'jas', 'coc', 'pan', 'tt', 'tg'];
 
-  if (isNoMilkOption) return;
+function drinkHasMilkOption(drink) {
+  if (!drink) return false;
+  if (drink.hideMilk === true) return false;
+  return !DRINK_IDS_WITHOUT_MILK.includes(drink.id);
+}
+
+function renderMilk() {
+  const showMilk = drinkHasMilkOption(modal.drink);
+  milkSection.style.display = showMilk ? '' : 'none';
+
+  if (!showMilk) return;
 
   milkContainer.innerHTML = MILK_OPTIONS.map(m => `
     <button class="milk-opt${m === 'Oat' ? ' selected' : ''}" data-milk="${m}">${m}</button>`).join('');
@@ -321,7 +328,7 @@ function renderCart() {
         <div class="cart-item-info">
           <div class="cart-item-name">${item.drink.name}</div>
           <div class="cart-item-detail">
-            Sugar: ${item.sugar} · Ice: ${item.ice} · Milk: ${item.milk}
+            Sugar: ${item.sugar} · Ice: ${item.ice}${drinkHasMilkOption(item.drink) ? ` · Milk: ${item.milk}` : ''}
             ${item.extraMatcha ? '<br>+ Extra Matcha (+1g)' : ''}
             ${item.toppings.length ? '<br>+ ' + item.toppings.map(t => t.label).join(', ') : ''}
           </div>
@@ -429,8 +436,10 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
         '',
         lab('Sugar', item.sugar),
         lab('Ice', item.ice),
-        lab('Milk', item.milk),
       ];
+      if (drinkHasMilkOption(item.drink)) {
+        rows.push(lab('Milk', item.milk));
+      }
       if (item.extraMatcha) {
         rows.push(lab('Extra', '+1g matcha'));
       }
