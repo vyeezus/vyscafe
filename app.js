@@ -39,7 +39,6 @@ const TOPPINGS = [
   { id: 'lychee', label: 'Lychee Jelly', icon: '⚪' },
 ];
 
-const MILK_OPTIONS = ['Oat', 'Soy', 'Whole'];
 const ICE_LEVELS = ['Low', 'Regular', 'Extra'];
 const SUGAR_LEVELS = ['No', 'Low', 'Regular', 'Extra'];
 
@@ -64,7 +63,6 @@ const modalOverlay = document.getElementById('modal-overlay');
 const sugarContainer = document.getElementById('sugar-container');
 const toppingsContainer = document.getElementById('toppings-container');
 const toppingsSection = document.getElementById('toppings-section');
-const milkContainer = document.getElementById('milk-container');
 const iceContainer = document.getElementById('ice-container');
 const modalName = document.getElementById('modal-name');
 const modalDesc = document.getElementById('modal-desc');
@@ -93,7 +91,8 @@ const CUSTOM_IMAGES = {
   jh: './honey_jasmine.jpg',
   coc: './coconut_cloud.jpg',
   ube: './ube_matcha.jpg',
-  man: './mango_matcha.jpg'
+  man: './mango_matcha.jpg',
+  bct: './banana_cream_top_matcha.jpg',
 };
 
 /** Product photos with alpha — skip multiply so transparent PNGs render correctly */
@@ -103,7 +102,7 @@ function getSVG(id, large) {
   if (CUSTOM_IMAGES[id]) {
     const noMultiply = CUSTOM_IMG_NO_MULTIPLY.has(id);
     const blend = noMultiply ? '' : ' mix-blend-mode: multiply;';
-    return `<img src="${CUSTOM_IMAGES[id]}?v=3537" style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;object-fit:contain; transform: scale(1.75);${blend}" alt="Drink">`;
+    return `<img src="${CUSTOM_IMAGES[id]}?v=3538" style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;object-fit:contain; transform: scale(1.75);${blend}" alt="Drink">`;
   }
   const svg = (typeof DRINK_SVGS !== 'undefined' && DRINK_SVGS[id]) || '';
   if (!svg) return `<div style="width:${large ? 100 : 72}px;height:${large ? 120 : 86}px;background:rgba(106,148,98,0.1);border-radius:12px;"></div>`;
@@ -229,10 +228,10 @@ function renderToppings(cat) {
 // Milk
 const milkSection = document.getElementById('milk-section');
 
-/** Same rules as the milk section in the modal — cart + order email must match. */
+/** Drinks that use oat milk but do not show the milk info block (tea / coconut / fixed recipes). */
 const DRINK_IDS_WITHOUT_MILK = ['jstr', 'jman', 'jpas', 'jgam', 'jas', 'coc', 'pan', 'tt', 'tg'];
 
-function drinkHasMilkOption(drink) {
+function drinkShowsMilkNote(drink) {
   if (!drink) return false;
   if (drink.hideMilk === true) return false;
   return !DRINK_IDS_WITHOUT_MILK.includes(drink.id);
@@ -246,20 +245,10 @@ function drinkOffersColdWhisked(drink, cat) {
 }
 
 function renderMilk() {
-  const showMilk = drinkHasMilkOption(modal.drink);
-  milkSection.style.display = showMilk ? '' : 'none';
-
-  if (!showMilk) return;
-
-  milkContainer.innerHTML = MILK_OPTIONS.map(m => `
-    <button class="milk-opt${m === 'Oat' ? ' selected' : ''}" data-milk="${m}">${m}</button>`).join('');
-  milkContainer.querySelectorAll('.milk-opt').forEach(btn => {
-    btn.addEventListener('click', () => {
-      modal.milk = btn.dataset.milk;
-      milkContainer.querySelectorAll('.milk-opt').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    });
-  });
+  const show = drinkShowsMilkNote(modal.drink);
+  milkSection.style.display = show ? '' : 'none';
+  if (!show) return;
+  modal.milk = 'Oat';
 }
 
 // Ice Level
@@ -357,7 +346,7 @@ function renderCart() {
         <div class="cart-item-info">
           <div class="cart-item-name">${item.drink.name}</div>
           <div class="cart-item-detail">
-            Sugar: ${item.sugar} · Ice: ${item.ice}${drinkHasMilkOption(item.drink) ? ` · Milk: ${item.milk}` : ''}
+            Sugar: ${item.sugar} · Ice: ${item.ice}
             ${item.coldWhisked ? '<br>+ Cold whisked' : ''}
             ${item.extraMatcha ? '<br>+ Extra Matcha (+1g)' : ''}
             ${item.toppings.length ? '<br>+ ' + item.toppings.map(t => t.label).join(', ') : ''}
@@ -467,9 +456,6 @@ async function sendEmailNotification(orderItems, customerName = 'Guest') {
         lab('Sugar', item.sugar),
         lab('Ice', item.ice),
       ];
-      if (drinkHasMilkOption(item.drink)) {
-        rows.push(lab('Milk', item.milk));
-      }
       if (item.coldWhisked) {
         rows.push(lab('Whisk', 'Cold whisked'));
       }
