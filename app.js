@@ -91,7 +91,6 @@ const CUSTOM_IMAGES = {
   jh: './honey_jasmine.jpg',
   coc: './coconut_cloud.jpg',
   ube: './ube_matcha.jpg',
-  man: './mango_matcha.jpg',
   bct: './banana_cream_top_matcha.jpg',
 };
 

@@ -12,7 +12,6 @@ window.BASE_DRINKS = {
     { id: 'pan', name: 'Pandan Matcha', desc: 'Pandan infused matcha latte', emoji: '🌿', seasonal: false },
     { id: 'coc', name: 'Coconut Cloud', desc: 'Coconut water with matcha cream top', emoji: '🥥', seasonal: false },
     { id: 'map', name: 'Salted Maple Matcha', desc: 'Matcha with pure maple syrup', emoji: '🍁', seasonal: false },
-    { id: 'man', name: 'Mango Matcha', desc: 'Matcha layered with ripe mango', emoji: '🥭', seasonal: true, tag: 'Available now' },
     { id: 'ube', name: 'Ube Matcha', desc: 'Matcha latte with ube cold foam', emoji: '💜', seasonal: false },
     { id: 'bct', name: 'Banana Cream Top Matcha', desc: 'Matcha latte with banana cream top', emoji: '🍌', seasonal: false },
   ],
